@@ -2,7 +2,7 @@
 Amazon Game Circle wrapper for Marmalade Quick
 ==============================================
 
-This is a 1:1 wrapper for the s3eGaemCircle C extension so that you
+This is a 1:1 wrapper for the s3eGameCircle C extension so that you
 can use it from Marmalade Quick Lua code. Functionality and usage is the
 same as the C++ version.
 
@@ -13,11 +13,11 @@ Notes:
 - All the paths here are relative to the root folder of your installed
   Marmalade SDK.
 
-NB: With Marmalade 7.8.0, this extension requires you to mod a file in the
+NB: With Marmalade 7.8.1, this extension requires you to mod a file in the
 Quick engine as well. Copy the contents of engine_mods over the root Marmalade
 SDK (e.g. C:/Marmalade/7.8) This will be built into the engine when you run
 build_quick_prebuilt.bat (see "Setup..." below) This should no longer be needed
-in 7.8.1 (TBC whether it makes that release)
+in the next version.
 
 
 Prerequisites
