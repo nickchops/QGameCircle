@@ -3,6 +3,7 @@
 #include "s3eGameCircle.h"
 #include "QLuaHelpers.h"
 #include "lua.h"
+#include "IwDebug.h"
 
 using namespace quick;
 
@@ -16,8 +17,8 @@ int32 InitializationCallback(void* systemData, void* userData)
     LUA_EVENT_PREPARE("gameCircle");
     LUA_EVENT_SET_STRING("type", "initialization");
     
-    s3eGameCircleStatus status = (s3eGameCircleStatus)systemData;
-    switch(status)
+    s3eGameCircleStatus* status = (s3eGameCircleStatus*)systemData;
+    switch(*status)
     {
         case S3E_GAMECIRCLE_INITIALIZING:
             LUA_EVENT_SET_STRING("status", "initializing");
@@ -68,7 +69,8 @@ int32 AchievementsOverlayCallback(void* systemData, void* userData)
 {
     LUA_EVENT_PREPARE("gameCircle");
     LUA_EVENT_SET_STRING("type", "achievementsOverlay");
-    LUA_EVENT_SET_BOOLEAN("success", (s3eResult)systemData == S3E_RESULT_SUCCESS ? true : false);
+    s3eResult* res = (s3eResult*)systemData;
+    LUA_EVENT_SET_BOOLEAN("success", *res == S3E_RESULT_SUCCESS ? true : false);
     LUA_EVENT_SEND();
     lua_pop(g_L, 1);
 
@@ -94,7 +96,7 @@ int32 AchievementUpdateProgressCallback(void* systemData, void* userData)
 int32 GetAchievementsCallback(void* systemData, void* userData)
 {
     LUA_EVENT_PREPARE("gameCircle");
-    LUA_EVENT_SET_STRING("type", "achievementsLoaded");
+    LUA_EVENT_SET_STRING("type", "getAchievements");
     
     s3eGameCircleAchievementList* achs = (s3eGameCircleAchievementList*)systemData;
     
@@ -130,9 +132,9 @@ int32 GetAchievementsCallback(void* systemData, void* userData)
         LUA_EVENT_SET_NUMBER("progress", ach->m_Position); //game circle only. Can be used to display achievements in a preferred order
         
         LUA_EVENT_SET_NUMBER("pointValue", ach->m_PointValue); //game circle only. Google does have points but not in the API...
-        LUA_EVENT_SET_INTEGER("progress", ach->m_Progress); // 0.0->100.0. //game circle only in native API, but QGooglePlayServices mimics this
+        LUA_EVENT_SET_NUMBER("progress", ach->m_Progress); // 0.0->100.0. //game circle only in native API, but QGooglePlayServices mimics this
         
-        LUA_EVENT_SET_STRING("description", ach->m_DateUnlocked;); //game circle only (google has similar but not "lastUpdate" integer)
+        LUA_EVENT_SET_STRING("description", ach->m_DateUnlocked); //game circle only (google has similar but not "lastUpdate" integer)
         
         LUA_EVENT_SET_STRING("imageUrl", ach->m_ImageURL); //game circle only
         
@@ -140,9 +142,6 @@ int32 GetAchievementsCallback(void* systemData, void* userData)
     }
     
     LUA_EVENT_END_AND_NAME_TABLE("achievements");
-    
-    int   m_PointValue;
-    float m_Progress;
     
     LUA_EVENT_SEND();
     lua_pop(g_L, 1);
@@ -186,7 +185,8 @@ int32 LeaderboardOverlayCallback(void* systemData, void* userData)
 {
     LUA_EVENT_PREPARE("gameCircle");
     LUA_EVENT_SET_STRING("type", "leaderboardOverlay");
-    LUA_EVENT_SET_BOOLEAN("success", (s3eResult)systemData == S3E_RESULT_SUCCESS ? true : false);
+    s3eResult* res = (s3eResult*)systemData;
+    LUA_EVENT_SET_BOOLEAN("success", *res == S3E_RESULT_SUCCESS ? true : false);
     LUA_EVENT_SEND();
     lua_pop(g_L, 1);
 
@@ -204,22 +204,22 @@ int32 LeaderboardSubmitScoreCallback(void* systemData, void* userData)
     
     LUA_EVENT_START_TABLE();
     LUA_EVENT_SET_BOOLEAN("rankImproved", response->m_RankImproved[S3E_GAMECIRCLE_FILTER_FRIENDS_ALL_TIME]);
-    LUA_EVENT_SET_INTEGER("rank", response->m_Rank[S3E_GAMECIRCLE_FILTER_FRIENDS_ALL_TIME]
+    LUA_EVENT_SET_INTEGER("rank", response->m_Rank[S3E_GAMECIRCLE_FILTER_FRIENDS_ALL_TIME]);
     LUA_EVENT_END_AND_NAME_TABLE("friendsAllTime");
     
     LUA_EVENT_START_TABLE();
     LUA_EVENT_SET_BOOLEAN("rankImproved", response->m_RankImproved[S3E_GAMECIRCLE_FILTER_GLOBAL_ALL_TIME]);
-    LUA_EVENT_SET_INTEGER("rank", response->m_Rank[S3E_GAMECIRCLE_FILTER_GLOBAL_ALL_TIME]
+    LUA_EVENT_SET_INTEGER("rank", response->m_Rank[S3E_GAMECIRCLE_FILTER_GLOBAL_ALL_TIME]);
     LUA_EVENT_END_AND_NAME_TABLE("globalAllTime");
     
     LUA_EVENT_START_TABLE();
     LUA_EVENT_SET_BOOLEAN("rankImproved", response->m_RankImproved[S3E_GAMECIRCLE_FILTER_GLOBAL_DAY]);
-    LUA_EVENT_SET_INTEGER("rank", response->m_Rank[S3E_GAMECIRCLE_FILTER_GLOBAL_DAY]
+    LUA_EVENT_SET_INTEGER("rank", response->m_Rank[S3E_GAMECIRCLE_FILTER_GLOBAL_DAY]);
     LUA_EVENT_END_AND_NAME_TABLE("globalDay");
     
     LUA_EVENT_START_TABLE();
     LUA_EVENT_SET_BOOLEAN("rankImproved", response->m_RankImproved[S3E_GAMECIRCLE_FILTER_GLOBAL_WEEK]);
-    LUA_EVENT_SET_INTEGER("rank", response->m_Rank[S3E_GAMECIRCLE_FILTER_GLOBAL_WEEK]
+    LUA_EVENT_SET_INTEGER("rank", response->m_Rank[S3E_GAMECIRCLE_FILTER_GLOBAL_WEEK]);
     LUA_EVENT_END_AND_NAME_TABLE("GlobalWeek");
     
     LUA_EVENT_END_AND_NAME_TABLE("response");
@@ -279,7 +279,7 @@ int32 LocalPlayerScoreCallback(void* systemData, void* userData)
     s3eGameCircleLeaderboardLocalPlayerScore* score = (s3eGameCircleLeaderboardLocalPlayerScore*)systemData;
     
     LUA_EVENT_SET_INTEGER("score", score->m_Score);
-    LUA_EVENT_SET_INTEGER("score", rank->m_Rank); //note that rank is a string in Google but int in Amazon
+    LUA_EVENT_SET_INTEGER("score", score->m_Rank); //note that rank is a string in Google but int in Amazon
     
     LUA_EVENT_SEND();
     lua_pop(g_L, 1);
@@ -332,9 +332,9 @@ int32 WhispersyncKeysCallback(void* systemData, void* userData)
     
     LUA_EVENT_START_TABLE();
     
-    for (int t = 1; t <= keys->m_Count; t++)
+    for (int t = 0; t < keys->m_Count; t++)
     {
-        LUA_EVENT_SET_STRING_AT_INDEX(t+1, keys->m_Keys + t) //lua indices start at 1
+        LUA_EVENT_SET_STRING_AT_INDEX(t+1, keys->m_Keys[t]); //lua indices start at 1
     }
     
     LUA_EVENT_END_AND_NAME_TABLE("keys");
@@ -358,52 +358,53 @@ int32 WhispersyncDataListCallback(void* systemData, void* userData)
     switch(dataList->m_Type)
     {
     case S3E_GAMEDATA_ACCUMULATING_NUMBER:
-        mapType = "accumulatingNumber"
+        mapType = "accumulatingNumber";
         break;
     case S3E_GAMEDATA_HIGHEST_NUMBER:
-         = "highestNumber"
+        mapType = "highestNumber";
         break;
     case S3E_GAMEDATA_HIGH_NUMBER_LIST:
-        mapType = "highNumberList"
+        mapType = "highNumberList";
         break;
     case S3E_GAMEDATA_LATEST_NUMBER:
-        mapType = "latestNumber"
+        mapType = "latestNumber";
         break;
     case S3E_GAMEDATA_LATEST_NUMBER_LIST:
-        mapType = "latestNumberList"
+        mapType = "latestNumberList";
         break;
     case S3E_GAMEDATA_LATEST_STRING:
-        mapType = "latestString"
+        mapType = "latestString";
         break;
     case S3E_GAMEDATA_LATEST_STRING_LIST:
-        mapType = "latestStrinmapTypegList"
+        mapType = "latestStrinmapTypegList";
         break;
     case S3E_GAMEDATA_LOW_NUMBER_LIST:
-        mapType = "lowNumberList"
+        mapType = "lowNumberList";
         break;
     case S3E_GAMEDATA_LOWEST_NUMBER:
-        mapType = "lowestNumber"
+        mapType = "lowestNumber";
         break;
     case S3E_GAMEDATA_STRING_SET:
-        mapType = "stringSet"
+        mapType = "stringSet";
         break;
     }
     LUA_EVENT_SET_STRING("dataType", mapType);
     
     LUA_EVENT_START_TABLE();
     
-    for (int t = 1; t <= keys->m_Count; t++)
+    for (int t = 0; t < dataList->m_Count; t++)
     {
         //TODO: type depends on dataList->m_Type. Need to find out what these are all meant to be...
         //void*  m_Items;
-        //LUA_EVENT_SET_STRING_AT_INDEX(t+1, keys->m_Items + t) //lua indices start at 1
+        //LUA_EVENT_SET_STRING_AT_INDEX(t+1, dataList->m_Items[t]) //lua indices start at 1
     }
     
     LUA_EVENT_END_AND_NAME_TABLE("items");
     
     LUA_EVENT_SEND();
     lua_pop(g_L, 1);
-
+    
+    return 0;
 }
 
 //------------------------------------------------------------------------------
@@ -503,7 +504,8 @@ void getAchievement(const char* achievementID)
 
 void setPopUpLocation(const char* location)
 {
-    s3eGameCircleSetPopUpLocation(location);
+    //TODO: convert string to enum
+    //s3eGameCircleSetPopUpLocation(location);
 }
 
 void showLeaderboardOverlay(const char* leaderboardID)
@@ -530,10 +532,28 @@ bool getFilterEnum(const char* prop, s3eGameCircleLeaderboardFilter* propEnum)
     else if (strcmp(prop, "highNumberList") == 0)
         *propEnum = S3E_GAMECIRCLE_FILTER_GLOBAL_DAY;
     else if (strcmp(prop, "latestNumber") == 0)
-        *propEnum = S3E_GAMECIRCLE_FILTER_GLOBAL_week;
+        *propEnum = S3E_GAMECIRCLE_FILTER_GLOBAL_WEEK;
     else
     {
-        IW_TRACE(Q_GAME_CIRCLE, ("Invalid filter type: %s", prop))
+        IwTrace(Q_GAME_CIRCLE, ("Invalid filter type: %s", prop));
+        return false;
+    }
+    return true;
+}
+
+bool getLeaderboardFilterEnum(const char* prop, s3eGameCircleLeaderboardFilter* propEnum)
+{
+    if (strcmp(prop, "firendsAllTime") == 0)
+        *propEnum = S3E_GAMECIRCLE_FILTER_FRIENDS_ALL_TIME;
+    else if (strcmp(prop, "globalAllTime") == 0)
+        *propEnum = S3E_GAMECIRCLE_FILTER_GLOBAL_ALL_TIME;
+    else if (strcmp(prop, "globalDay") == 0)
+        *propEnum = S3E_GAMECIRCLE_FILTER_GLOBAL_DAY;
+    else if (strcmp(prop, "globalWeek") == 0)
+        *propEnum = S3E_GAMECIRCLE_FILTER_GLOBAL_WEEK;
+    else
+    {
+        IwTrace(Q_GAME_CIRCLE, ("Invalid key type: %s", prop));
         return false;
     }
     return true;
@@ -543,7 +563,7 @@ void getScores(const char* leaderboardID, const char* filter)
 {
     s3eGameCircleLeaderboardFilter filterEnum;
     
-    if (getDataMapTypeEnum(type, &filterEnum) == false)
+    if (getLeaderboardFilterEnum(filter, &filterEnum) == false)
         return;
     
     s3eGameCircleGetScores(leaderboardID, filterEnum);
@@ -553,12 +573,13 @@ void getLocalPlayerScore(const char* leaderboardID, const char* filter)
 {
     s3eGameCircleLeaderboardFilter filterEnum;
     
-    if (getDataMapTypeEnum(type, &filterEnum) == false)
+    if (getLeaderboardFilterEnum(filter, &filterEnum) == false)
         return;
     
     s3eGameCircleGetLocalPlayerScore(leaderboardID, filterEnum);
 }
 
+/*
 void whispersyncFlush()
 {
     s3eGameCircleWhispersyncFlush();
@@ -593,7 +614,7 @@ bool getDataMapTypeEnum(const char* prop, s3eGameCircleGameDataMapType* propEnum
         *propEnum = S3E_GAMEDATA_STRING_SET;
     else
     {
-        IW_TRACE(Q_GAME_CIRCLE, ("Invalid key type: %s", prop))
+        IwTrace(Q_GAME_CIRCLE, ("Invalid key type: %s", prop))
         return false;
     }
     return true;
@@ -711,5 +732,6 @@ void whispersyncGetStringSet(const char* name)
 {
     s3eGameCircleWhispersyncGetStringSet(name);
 }
+*/
 
 } //namespace gameCircle

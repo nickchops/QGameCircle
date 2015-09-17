@@ -23,7 +23,7 @@ namespace gameCircle {
     void submitScore(const char* leaderboardID, int score);
     void getScores(const char* leaderboardID, const char* filter);
     void getLocalPlayerScore(const char* leaderboardID, const char* filter);
-    void whispersyncFlush();
+    /*void whispersyncFlush();
     void whispersyncSynchronize();
     void whispersyncGetKeys(const char* type);
     void whispersyncSetAccumulatingNumber(const char* name, double* delta);
@@ -45,7 +45,7 @@ namespace gameCircle {
     void whispersyncGetLatestNumberList(const char* name);
     void whispersyncGetLatestStringList(const char* name);
     void whispersyncGetLowNumberList(const char* name);
-    void whispersyncGetStringSet(const char* name);
+    void whispersyncGetStringSet(const char* name);*/
     
 } //namespace gameCircle
 
